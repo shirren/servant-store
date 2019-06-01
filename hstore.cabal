@@ -64,8 +64,12 @@ library
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.11 && <4.12
                       , aeson
-                      , text
+                      , beam-core
+                      , beam-migrate
+                      , beam-postgres
+                      , postgresql-simple
                       , servant-server
+                      , text
                       , wai
                       , warp
 
