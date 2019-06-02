@@ -1,6 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 
+-- The API is the entry point into the module. Here we only export the definition
+-- of our Api and the server. Note that the functions or "Handlers" are not exposed
+-- thereby preserving encapsulation.
 module Users.Api (
   UserApi,
   usersServer
@@ -25,6 +28,8 @@ type UserApi =
   :<|> Capture "id" Text :> Get '[JSON] User -- i.e. /api/v1/users/:id
   )
 
+-- Definition of our User module API which maps our routes from the type
+-- UserApi to a collection of functions that return a type of Handler.
 usersServer :: Server UserApi
 usersServer =
   getUsers :<|>
@@ -36,6 +41,6 @@ getUsers =
 
 getUser :: Text -> Handler User
 getUser id =
-  case find (\ (User e f l p) -> p == id) UsersDb.findAll of
+  case find (\ (User _ e f l p) -> p == id) UsersDb.findAll of
     Just user -> pure user
     _         -> throwError err404
