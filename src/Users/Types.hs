@@ -11,7 +11,6 @@ module Users.Types (
 
 import Data.Aeson ((.=), object, ToJSON, toJSON)
 import Data.Text (Text)
-import Data.UUID (UUID)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Nullable, Table, primaryKey)
 
 import GHC.Generics (Generic)
@@ -26,7 +25,7 @@ data UserT f =
   , _userFirstName :: Columnar f Text
   , _userMiddleName :: Columnar (Nullable f) Text -- Example of a Nullable column
   , _userLastName :: Columnar f Text
-  , _userPermaId :: Columnar f UUID
+  , _userPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 
 deriving instance Show User

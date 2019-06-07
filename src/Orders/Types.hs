@@ -8,7 +8,7 @@ module Orders.Types (
   , OrderT (..)
 ) where
 
-import Data.UUID (UUID)
+import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
 
 import GHC.Generics (Generic)
@@ -25,7 +25,7 @@ data OrderT f =
     _orderId :: Columnar f Int
   , _user :: PrimaryKey UserT f
   , _product :: PrimaryKey ProductT f
-  , _orderPermaId :: Columnar f UUID
+  , _orderPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 
 deriving instance Show Order

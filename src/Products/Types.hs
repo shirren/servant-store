@@ -11,8 +11,8 @@ module Products.Types (
 
 import Data.Aeson ((.=), object, ToJSON, toJSON)
 import Data.Text (Text)
-import Data.UUID (UUID)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
+import Database.Beam.Postgres (PgMoney)
 
 import GHC.Generics (Generic)
 
@@ -23,8 +23,8 @@ data ProductT f =
   Product {
     _productId :: Columnar f Int
   , _description :: Columnar f Text
-  , _price :: Columnar f Double
-  , _productPermaId :: Columnar f UUID
+  , _price :: Columnar f PgMoney
+  , _productPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 
 deriving instance Show Product
@@ -54,6 +54,6 @@ instance ToJSON Product
   where
     toJSON (Product _ d p permaId) =
       object ["description" .= d
-            , "price" .= p
+            , "price" .= show p
             , "id" .= permaId
             ]

@@ -7,7 +7,7 @@ module Products.Api (
 ) where
 
 import           Data.List (find)
-import           Data.UUID (UUID)
+import           Data.Text (Text)
 
 import qualified Products.Data as ProductsDb
 import           Products.Types (Product, ProductT (..))
@@ -22,7 +22,7 @@ type ProductApi =
   "api" :> "v1" :> "products" :>
   (
        Get '[JSON] [Product] -- i.e. /api/v1/products
-  :<|> Capture "sku" UUID :> Get '[JSON] Product -- i.e. /api/v1/products/:id
+  :<|> Capture "perma_id" Text :> Get '[JSON] Product -- i.e. /api/v1/products/:id
   )
 
 -- This function "collects" all the route handler functions, which can then
@@ -37,8 +37,8 @@ getProducts :: Handler [Product]
 getProducts =
   pure ProductsDb.findAll
 
--- Route handler for Capture "sku" Text :> Get '[JSON] Product
-getProduct :: UUID -> Handler Product
+-- Route handler for Capture "perma_id" Text :> Get '[JSON] Product
+getProduct :: Text -> Handler Product
 getProduct pId =
   case find (\ (Product _ _ _ permaId) -> permaId == pId) ProductsDb.findAll of
     Just p -> pure p

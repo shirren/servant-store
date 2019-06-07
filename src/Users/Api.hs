@@ -10,7 +10,7 @@ module Users.Api (
 ) where
 
 import           Data.List (find)
-import           Data.UUID (UUID)
+import           Data.Text (Text)
 
 import           Servant
 
@@ -25,7 +25,7 @@ type UserApi =
   "api" :> "v1" :> "users" :>
   (
       Get '[JSON] [User] -- i.e. /api/v1/users
-  :<|> Capture "id" UUID :> Get '[JSON] User -- i.e. /api/v1/users/:id
+  :<|> Capture "id" Text :> Get '[JSON] User -- i.e. /api/v1/users/:id
   )
 
 -- Definition of our User module API which maps our routes from the type
@@ -39,7 +39,7 @@ getUsers :: Handler [User]
 getUsers =
   pure UsersDb.findAll
 
-getUser :: UUID -> Handler User
+getUser :: Text -> Handler User
 getUser pId =
   case find (\ (User _ _ _ _ _ p) -> p == pId) UsersDb.findAll of
     Just user -> pure user

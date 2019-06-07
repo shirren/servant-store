@@ -8,17 +8,17 @@ module Store (
   , storeDb
 ) where
 
-import Database.Beam (Database,
-  DatabaseSettings,
-  TableEntity,
-  defaultDbSettings,
-  default_,
-  just_,
-  insert,
-  nothing_,
-  insertExpressions,
-  runInsert)
+import Database.Beam (Database
+  , DatabaseSettings
+  , TableEntity
+  , defaultDbSettings
+  , default_
+  , just_
+  , insert
+  , nothing_
+  , insertExpressions)
 import Database.Beam.Postgres (Postgres, runBeamPostgresDebug)
+import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Database.PostgreSQL.Simple (connectPostgreSQL)
 
 import GHC.Generics (Generic)
@@ -40,11 +40,13 @@ storeDb = defaultDbSettings
 -- Seed some baseline data in the application.
 seedData :: IO ()
 seedData = do
-  conn <- connectPostgreSQL "dbname=store_dev host=localhost user=? password=? port=5432"
-  runBeamPostgresDebug putStrLn {- for debug output -} conn $ do
-    runInsert $ insert (_storeUsers storeDb) $
+  conn <- connectPostgreSQL "dbname=store_dev host=localhost user=postgres password=root port=5432"
+  (user1, user2, product1, product2) <- runBeamPostgresDebug putStrLn {- for debug output -} conn $ do
+    [user1, user2] <- runInsertReturningList $ insert (_storeUsers storeDb) $
       insertExpressions [ User default_ "james@example.com" "James" nothing_ "Smith" default_
                         , User default_ "john@example.com" "John" (just_ "Adrian") "Doe" default_]
-    runInsert $ insert (_storeProducts storeDb) $
+    [product1, product2] <- runInsertReturningList $ insert (_storeProducts storeDb) $
       insertExpressions [ Product default_ "Toothbrush" 3.50 default_
-                      , Product default_ "Dental floss" 1.20 default_]
+                        , Product default_ "Dental floss" 1.20 default_ ]
+    pure (user1, user2, product1, product2)
+  putStrLn ("Seeding complete..." <> show user1 <> show user2 <> show product1 <> show product2)
