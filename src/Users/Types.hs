@@ -1,18 +1,18 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
--- {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
--- {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 module Users.Types (
-    User (..)
+    User
   , UserT (..)
 ) where
 
 import Data.Aeson ((.=), object, ToJSON, toJSON)
 import Data.Text (Text)
-import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
+import Data.UUID (UUID)
+import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Nullable, Table, primaryKey)
 
 import GHC.Generics (Generic)
 
@@ -21,17 +21,23 @@ import GHC.Generics (Generic)
 -- be an instance of Beamable
 data UserT f =
   User {
-    _userId :: Columnar f Integer
-  , _userEmailAddress :: Columnar f Text
+    _userId :: Columnar f Int
+  , _userEmail :: Columnar f Text
   , _userFirstName :: Columnar f Text
+  , _userMiddleName :: Columnar (Nullable f) Text -- Example of a Nullable column
   , _userLastName :: Columnar f Text
-  , _userPermaId :: Columnar f Text
+  , _userPermaId :: Columnar f UUID
   } deriving (Generic, Beamable)
+
+deriving instance Show User
+deriving instance Eq User
+deriving instance Show UserId
+deriving instance Eq UserId
 
 -- Tables should have a primary key. In this case we set the column
 -- userId as the primary key.
 instance Table UserT where
-  data PrimaryKey UserT f = UserId (Columnar f Integer)
+  data PrimaryKey UserT f = UserId (Columnar f Int)
     deriving (Generic, Beamable)
   primaryKey = UserId . _userId
 
@@ -48,8 +54,9 @@ type UserId = PrimaryKey UserT Identity
 -- our internal fields.
 instance ToJSON User
   where
-    toJSON (User _ e fname lname _) =
-      object ["emailAddress" .= e
+    toJSON (User _ e fname mname lname _) =
+      object ["email" .= e
             , "firstName" .= fname
+            , "middleName" .= mname
             , "lastName" .= lname
             ]

@@ -45,15 +45,16 @@ extra-source-files:  ChangeLog.md
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
 
-
 library
   -- Modules exported by the library.
   exposed-modules:      Products.Api
                       , Products.Data
                       , Products.Types
+                      , Store
                       , Users.Api
                       , Users.Data
                       , Users.Types
+                      , Orders.Types
 
   -- Modules included in this library but not exported.
   -- other-modules:
@@ -70,6 +71,7 @@ library
                       , postgresql-simple
                       , servant-server
                       , text
+                      , uuid
                       , wai
                       , warp
 
@@ -78,6 +80,8 @@ library
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
+
+  ghc-options:         -O2 -Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
 
 executable hstore
   -- .hs or .lhs file containing the Main module.
@@ -91,8 +95,16 @@ executable hstore
 
   -- Other library packages from which modules are imported.
   build-depends:       base >=4.11 && <4.12
+                      , aeson
+                      , beam-core
+                      , beam-migrate
+                      , beam-postgres
                       , hstore
+                      , postgresql-simple
                       , servant-server
+                      , text
+                      , servant-server
+                      , uuid
                       , wai
                       , warp
 
@@ -102,3 +114,4 @@ executable hstore
   -- Base language which the package is written in.
   default-language:    Haskell2010
 
+  ghc-options:         -O2 -Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
