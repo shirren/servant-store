@@ -13,7 +13,7 @@ import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKe
 
 import GHC.Generics (Generic)
 
-import Products.Types (ProductT)
+import Products.Types (ProductT (..))
 
 import Users.Types (UserT (..))
 

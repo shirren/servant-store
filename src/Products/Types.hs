@@ -12,7 +12,6 @@ module Products.Types (
 import Data.Aeson ((.=), object, ToJSON, toJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
-import Database.Beam.Postgres (PgMoney)
 
 import GHC.Generics (Generic)
 
@@ -23,7 +22,7 @@ data ProductT f =
   Product {
     _productId :: Columnar f Int
   , _description :: Columnar f Text
-  , _price :: Columnar f PgMoney
+  , _price :: Columnar f Integer -- Storing the amount as cents to avoid rounding issues.
   , _productPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 

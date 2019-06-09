@@ -15,15 +15,15 @@ CREATE TABLE users (
 CREATE TABLE products (
     id SERIAL
   , description VARCHAR NOT NULL
-  , price MONEY NOT NULL
+  , price INT NOT NULL
   , perma_id TEXT default md5(random()::text)
   , PRIMARY KEY( id )
 );
 
 CREATE TABLE orders (
     id SERIAL
-  , user_id INTEGER REFERENCES users(id)
-  , product_id INTEGER REFERENCES products(id)
+  , user__id INTEGER REFERENCES users(id)
+  , product__id INTEGER REFERENCES products(id)
   , perma_id TEXT default md5(random()::text)
   , PRIMARY KEY( id )
 );

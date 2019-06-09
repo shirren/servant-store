@@ -6,6 +6,7 @@
 
 module Users.Types (
     User
+  , UserId
   , UserT (..)
 ) where
 
