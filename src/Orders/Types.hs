@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -8,6 +9,7 @@ module Orders.Types (
   , OrderT (..)
 ) where
 
+import Data.Aeson ((.=), object, ToJSON, toJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
 
@@ -23,9 +25,9 @@ import Users.Types (UserT (..))
 data OrderT f =
   Order {
     _orderId :: Columnar f Int
-  , _user :: PrimaryKey UserT f
-  , _product :: PrimaryKey ProductT f
-  , _orderPermaId :: Columnar f Text
+  , orderUser :: PrimaryKey UserT f
+  , orderProduct :: PrimaryKey ProductT f
+  , orderPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 
 deriving instance Show Order
@@ -47,3 +49,11 @@ type Order = OrderT Identity
 
 -- Our primary key for OrderT
 type OrderId = PrimaryKey OrderT Identity
+
+-- We serialise our type using a representation that is more front
+-- end friendly, plus we do not want to really expose the names of
+-- our internal fields.
+instance ToJSON Order
+  where
+    toJSON (Order _ _ _ permaId) =
+      object ["id" .= permaId]

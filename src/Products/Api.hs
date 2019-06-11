@@ -6,13 +6,13 @@ module Products.Api (
   productsServer
 ) where
 
-import           Data.List (find)
-import           Data.Text (Text)
+import Control.Monad.IO.Class (liftIO)
 
-import qualified Products.Data as ProductsDb
-import           Products.Types (Product, ProductT (..))
+import Data.Text (Text)
+import Products.Data (findAll, findById)
+import Products.Types (Product)
 
-import           Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, throwError)
+import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, throwError)
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -33,13 +33,15 @@ productsServer =
   getProduct
 
 -- Route handler for GET '[JSON] [Product]
+-- findAll returns type IO [Product] which we lift to Handler [Product]
 getProducts :: Handler [Product]
 getProducts =
-  pure ProductsDb.findAll
+  liftIO findAll
 
 -- Route handler for Capture "perma_id" Text :> Get '[JSON] Product
 getProduct :: Text -> Handler Product
-getProduct pId =
-  case find (\ (Product _ _ _ permaId) -> permaId == pId) ProductsDb.findAll of
+getProduct pId = do
+  result <- liftIO $ findById pId
+  case result of
     Just p -> pure p
     _      -> throwError err404

@@ -48,6 +48,9 @@ cabal-version:       >=1.10
 library
   -- Modules exported by the library.
   exposed-modules:      Data.DB
+                      , Orders.Api
+                      , Orders.Data
+                      , Orders.Types
                       , Products.Api
                       , Products.Data
                       , Products.Types
@@ -55,7 +58,6 @@ library
                       , Users.Api
                       , Users.Data
                       , Users.Types
-                      , Orders.Types
 
   -- Modules included in this library but not exported.
   -- other-modules:
