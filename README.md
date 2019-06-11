@@ -69,7 +69,7 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [x] Find by id
 - [x] Find with associations
 - [ ] Update
-- [x] Insert
+- [ ] Insert
 - [ ] Delete
 - [ ] Ordering
 - [x] Limits
