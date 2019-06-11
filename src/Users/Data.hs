@@ -11,7 +11,8 @@ import Database.Beam
 import Database.Beam.Postgres (runBeamPostgresDebug)
 import Database.Beam.Query (runSelectReturningList)
 
-import Users.Types (User, UserT (userPermaId))
+-- We import all the User entity functions as we can possibly sort of any of them.
+import Users.Types (User, UserT (..))
 
 findAll :: PageSize -> PageNum -> IO [User]
 findAll pageSize pageNum = do
@@ -19,6 +20,7 @@ findAll pageSize pageNum = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
+      orderBy_ (\u -> (asc_ (userFirstName u), desc_ (userLastName u))) $
       limit_ pageSize $
       offset_ pageNum $
       all_ (storeUsers storeDb)
