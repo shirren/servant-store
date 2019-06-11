@@ -4,8 +4,10 @@
 {-# LANGUAGE TypeOperators #-}
 
 module Data.DB (
-    defaultPageSize
+    defaultPageNum
+  , defaultPageSize
   , getConnection
+  , PageNum
   , PageSize
   , storeDb
   ,  StoreDb (..)
@@ -24,9 +26,13 @@ import Users.Types (UserT (..))
 
 -- We can specify limits on the number of rows we would like back from the database
 type PageSize = Integer
+type PageNum = Integer
 
 defaultPageSize :: PageSize
 defaultPageSize = 10
+
+defaultPageNum :: PageNum
+defaultPageNum = 0
 
 -- A database is defined as a collection on entities or tables.
 data StoreDb f = StoreDb {

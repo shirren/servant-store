@@ -8,7 +8,7 @@ module Products.Api (
 
 import Control.Monad.IO.Class (liftIO)
 
-import Data.DB (defaultPageSize, PageSize)
+import Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
@@ -24,7 +24,7 @@ import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, t
 type ProductApi =
   "api" :> "v1" :> "products" :>
   (
-    QueryParam "page[size]" PageSize :> Get '[JSON] [Product] -- i.e. /api/v1/products
+    QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Product] -- i.e. /api/v1/products
   :<|> Capture "perma_id" Text :> Get '[JSON] Product -- i.e. /api/v1/products/:id
   )
 
@@ -37,9 +37,9 @@ productsServer =
 
 -- Route handler for GET '[JSON] [Product]
 -- findAll returns type IO [Product] which we lift to Handler [Product]
-getProducts :: Maybe PageSize -> Handler [Product]
-getProducts pageSize =
-  liftIO $ findAll $ fromMaybe defaultPageSize pageSize
+getProducts :: Maybe PageSize -> Maybe PageNum -> Handler [Product]
+getProducts pageSize pageNum =
+  liftIO $ findAll (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
 
 -- Route handler for Capture "perma_id" Text :> Get '[JSON] Product
 getProduct :: Text -> Handler Product

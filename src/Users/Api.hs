@@ -11,7 +11,7 @@ module Users.Api (
 
 import Control.Monad.IO.Class (liftIO)
 
-import Data.DB (defaultPageSize, PageSize)
+import Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
@@ -27,7 +27,7 @@ import Users.Types (User)
 type UserApi =
   "api" :> "v1" :> "users" :>
   (
-    QueryParam "page[size]" PageSize :> Get '[JSON] [User] -- i.e. /api/v1/users
+    QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [User] -- i.e. /api/v1/users
   :<|> Capture "id" Text :> Get '[JSON] User -- i.e. /api/v1/users/:id
   )
 
@@ -39,9 +39,9 @@ usersServer =
   getUser
 
 -- findAll returns type IO [User] which we lift to Handler [User]
-getUsers :: Maybe PageSize -> Handler [User]
-getUsers pageSize =
-  liftIO $ findAll $ fromMaybe defaultPageSize pageSize
+getUsers :: Maybe PageSize -> Maybe PageNum -> Handler [User]
+getUsers pageSize pageNum =
+  liftIO $ findAll (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
 
 getUser :: Text -> Handler User
 getUser uId = do

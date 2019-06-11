@@ -5,7 +5,7 @@ module Users.Data (
   , findById
 ) where
 
-import Data.DB (getConnection, PageSize, storeDb, StoreDb (storeUsers))
+import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeUsers))
 import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Postgres (runBeamPostgresDebug)
@@ -13,13 +13,14 @@ import Database.Beam.Query (runSelectReturningList)
 
 import Users.Types (User, UserT (userPermaId))
 
-findAll :: PageSize -> IO [User]
-findAll pageSize = do
+findAll :: PageSize -> PageNum -> IO [User]
+findAll pageSize pageNum = do
   conn  <- getConnection
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
       limit_ pageSize $
+      offset_ pageNum $
       all_ (storeUsers storeDb)
 
 findById :: Text -> IO (Maybe User)

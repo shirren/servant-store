@@ -3,7 +3,7 @@ module Products.Data (
   , findById
 ) where
 
-import Data.DB (getConnection, PageSize, storeDb, StoreDb (storeProducts))
+import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeProducts))
 import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Postgres (runBeamPostgresDebug)
@@ -11,13 +11,14 @@ import Database.Beam.Query (runSelectReturningList)
 
 import Products.Types (Product, ProductT (productPermaId))
 
-findAll :: PageSize -> IO [Product]
-findAll pageSize = do
+findAll :: PageSize -> PageNum -> IO [Product]
+findAll pageSize pageNum = do
   conn <- getConnection
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
       limit_ pageSize $
+      offset_ pageNum $
       all_ (storeProducts storeDb)
 
 findById :: Text -> IO (Maybe Product)

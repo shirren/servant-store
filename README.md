@@ -51,6 +51,6 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [ ] Delete
 - [ ] Ordering
 - [x] Limits
-- [ ] Offsets
+- [x] Offsets
 - [ ] Migrations
 - [ ] Custom column names
