@@ -47,7 +47,8 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:      Products.Api
+  exposed-modules:      Data.DB
+                      , Products.Api
                       , Products.Data
                       , Products.Types
                       , Store
@@ -106,6 +107,7 @@ executable hstore
                       , servant-server
                       , uuid
                       , wai
+                      , wai-extra
                       , warp
 
   -- Directories containing source files.

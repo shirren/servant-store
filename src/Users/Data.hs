@@ -1,10 +1,30 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Users.Data (
-  findAll
+    findAll
+  , findById
 ) where
 
-import Users.Types (User)
+import Data.DB (storeDb, StoreDb (storeUsers), getConnection)
+import Data.Text (Text)
+import Database.Beam
+import Database.Beam.Postgres (runBeamPostgresDebug)
+import Database.Beam.Query (runSelectReturningList)
 
-findAll :: [User]
-findAll = []
+import Users.Types (User, UserT (userPermaId))
+
+findAll :: IO [User]
+findAll = do
+  conn  <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runSelectReturningList $ select $ all_ (storeUsers storeDb)
+
+findById :: Text -> IO (Maybe User)
+findById uId = do
+  conn  <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runSelectReturningOne $
+      select $ do
+        user <- all_ (storeUsers storeDb)
+        guard_ (val_ uId ==. userPermaId user)
+        return user

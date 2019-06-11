@@ -5,6 +5,7 @@ module Main where
 
 import Network.Wai (Application)
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 
 import Products.Api (ProductApi, productsServer)
 
@@ -25,4 +26,4 @@ app = serve (Proxy :: Proxy API) server
 main :: IO ()
 main = do
   seedData
-  run 3000 app
+  run 3000 $ logStdoutDev app

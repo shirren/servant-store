@@ -5,17 +5,17 @@
 -- of our Api and the server. Note that the functions or "Handlers" are not exposed
 -- thereby preserving encapsulation.
 module Users.Api (
-  UserApi,
-  usersServer
+    UserApi
+  , usersServer
 ) where
 
-import           Data.List (find)
-import           Data.Text (Text)
+import Control.Monad.IO.Class (liftIO)
+import Data.Text (Text)
 
-import           Servant
+import Servant
 
-import qualified Users.Data as UsersDb
-import           Users.Types (User, UserT (..))
+import Users.Data (findAll, findById)
+import Users.Types (User)
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -35,12 +35,14 @@ usersServer =
   getUsers :<|>
   getUser
 
+-- findAll returns type IO [User] which we lift to Handler [User]
 getUsers :: Handler [User]
 getUsers =
-  pure UsersDb.findAll
+  liftIO findAll
 
 getUser :: Text -> Handler User
-getUser pId =
-  case find (\ (User _ _ _ _ _ p) -> p == pId) UsersDb.findAll of
+getUser uId = do
+  result <- liftIO $ findById uId
+  case result of
     Just user -> pure user
     _         -> throwError err404

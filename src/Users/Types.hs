@@ -22,11 +22,11 @@ import GHC.Generics (Generic)
 data UserT f =
   User {
     _userId :: Columnar f Int
-  , _userEmail :: Columnar f Text
-  , _userFirstName :: Columnar f Text
-  , _userMiddleName :: Columnar (Nullable f) Text -- Example of a Nullable column
-  , _userLastName :: Columnar f Text
-  , _userPermaId :: Columnar f Text
+  , userEmail :: Columnar f Text
+  , userFirstName :: Columnar f Text
+  , userMiddleName :: Columnar (Nullable f) Text -- Example of a Nullable column
+  , userLastName :: Columnar f Text
+  , userPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 
 deriving instance Show User
