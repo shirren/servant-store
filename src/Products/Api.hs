@@ -8,11 +8,14 @@ module Products.Api (
 
 import Control.Monad.IO.Class (liftIO)
 
+import Data.DB (defaultPageSize, PageSize)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+
 import Products.Data (findAll, findById)
 import Products.Types (Product)
 
-import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, throwError)
+import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, throwError, QueryParam)
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -21,7 +24,7 @@ import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, t
 type ProductApi =
   "api" :> "v1" :> "products" :>
   (
-       Get '[JSON] [Product] -- i.e. /api/v1/products
+    QueryParam "page[size]" PageSize :> Get '[JSON] [Product] -- i.e. /api/v1/products
   :<|> Capture "perma_id" Text :> Get '[JSON] Product -- i.e. /api/v1/products/:id
   )
 
@@ -34,9 +37,9 @@ productsServer =
 
 -- Route handler for GET '[JSON] [Product]
 -- findAll returns type IO [Product] which we lift to Handler [Product]
-getProducts :: Handler [Product]
-getProducts =
-  liftIO findAll
+getProducts :: Maybe PageSize -> Handler [Product]
+getProducts pageSize =
+  liftIO $ findAll $ fromMaybe defaultPageSize pageSize
 
 -- Route handler for Capture "perma_id" Text :> Get '[JSON] Product
 getProduct :: Text -> Handler Product

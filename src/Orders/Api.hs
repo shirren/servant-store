@@ -10,6 +10,9 @@ module Orders.Api (
 ) where
 
 import Control.Monad.IO.Class (liftIO)
+
+import Data.DB (defaultPageSize, PageSize)
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
 import Servant
@@ -26,7 +29,7 @@ import Users.Data (findById)
 type OrderApi =
   "api" :> "v1" :> "users" :>
   (
-    Capture "id" Text :> "orders" :> Get '[JSON] [Maybe Order]  -- i.e. /api/v1/users/:id/orders
+    Capture "id" Text :> "orders" :> QueryParam "page[size]" PageSize :> Get '[JSON] [Maybe Order]  -- i.e. /api/v1/users/:id/orders
   )
 
 -- Definition of our Order module API which maps our routes from the type
@@ -36,10 +39,10 @@ ordersServer =
   getOrders
 
 -- findAll returns type IO [User] which we lift to Handler [User]
-getOrders :: Text -> Handler [Maybe Order]
-getOrders uId = do
+getOrders :: Text -> Maybe PageSize -> Handler [Maybe Order]
+getOrders uId pageSize = do
   result <- liftIO $ findById uId
   case result of
     Just user ->
-      liftIO $ findByUser user
+      liftIO $ findByUser user $ fromMaybe defaultPageSize pageSize
     _         -> throwError err404

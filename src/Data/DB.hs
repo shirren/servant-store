@@ -4,9 +4,11 @@
 {-# LANGUAGE TypeOperators #-}
 
 module Data.DB (
-    StoreDb (..)
+    defaultPageSize
   , getConnection
+  , PageSize
   , storeDb
+  ,  StoreDb (..)
 ) where
 
 import Database.Beam (Database, DatabaseSettings, TableEntity, defaultDbSettings)
@@ -19,6 +21,12 @@ import GHC.Generics (Generic)
 import Orders.Types (OrderT (..))
 import Products.Types (ProductT (..))
 import Users.Types (UserT (..))
+
+-- We can specify limits on the number of rows we would like back from the database
+type PageSize = Integer
+
+defaultPageSize :: PageSize
+defaultPageSize = 10
 
 -- A database is defined as a collection on entities or tables.
 data StoreDb f = StoreDb {

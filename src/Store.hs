@@ -11,7 +11,7 @@ import Users.Data (findAll)
 -- in the system.
 seedData :: IO ()
 seedData = do
-  users <- findAll
+  users <- findAll 10
   -- conn <- getConnection
   -- (user1, user2, product1, product2, order1) <- runBeamPostgresDebug putStrLn {- for debug output -} conn $ do
   --   [user1, user2] <- runInsertReturningList $ insert (_storeUsers storeDb) $
