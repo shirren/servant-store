@@ -14,7 +14,11 @@ Ensure the application compiles with the following command `cabal new-build`. On
 
 ### Migrations
 
-This example application currently does not support migrations. It is on my todo list. Till migrations are available the following `CREATE TABLE` sql statements need to be run in sequential order.
+This example application currently does not support migrations. It is on my todo list. Till migrations are available the following `CREATE TABLE` sql statements need to be run in sequential order. But to begin first create the database in Potgres with the following command;
+
+```SQL
+CREATE DATABASE store_dev;
+```
 
 ```SQL
 CREATE TABLE users (
@@ -52,7 +56,7 @@ CREATE TABLE orders (
 
 ### Running The Application
 
-To run the application use the command `cabal new-run`. The application has been configured to debug to STDOUT as requests are made both at the Web layer, and the DB layer. You will see which routes are processing requests, and what the executed queries look like.
+To run the application use the command `cabal new-run`. The application has been configured to debug to STDOUT as requests are made both at the Web layer, and the DB layer. You will see which routes are processing requests, and what the executed queries look like. The application cannot be currently configured and will most likely not connect to your Postgres database because the connection string requires a username and password. The connection string to connect to Postgres is located in the `Data.DB` module in the `getConnection` function.
 
 ## Domain Model
 
@@ -68,8 +72,8 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [x] Find all
 - [x] Find by id
 - [x] Find with associations
+- [x] Insert
 - [ ] Update
-- [ ] Insert
 - [ ] Delete
 - [ ] Ordering
 - [x] Limits
@@ -79,3 +83,5 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [ ] JSON Api
 - [ ] Authorisation (OAuth2)
 - [ ] NEST configuration
+- [ ] Tests
+- [ ] Error Handling

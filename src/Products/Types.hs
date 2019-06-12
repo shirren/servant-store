@@ -21,8 +21,8 @@ import GHC.Generics (Generic)
 data ProductT f =
   Product {
     _productId :: Columnar f Int
-  , description :: Columnar f Text
-  , price :: Columnar f Integer -- Storing the amount as cents to avoid rounding issues.
+  , productDescription :: Columnar f Text
+  , productPrice :: Columnar f Integer -- Storing the amount as cents to avoid rounding issues.
   , productPermaId :: Columnar f Text
   } deriving (Generic, Beamable)
 
