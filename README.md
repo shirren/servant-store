@@ -1,8 +1,8 @@
 # Example Servant Application
 
-The goal of this project is to share a template for writing an API in Haskell using the Servant library for the web layer and the Beam library for the data access layer and to make authoring Haskell code in the web realm as accessible as possible. However this project assumes some base Haskell knowledge.
+The goal of this project is to share a template for writing a RESTful API in Haskell using the Servant library for the web layer and the Beam library for the data access layer and to make authoring Haskell code in the web realm as accessible as possible. However this project assumes some base Haskell knowledge.
 
-External contributions are more than welcome. Please get in contact with via this projects issues tracker if you would like to help out.
+External contributions are more than welcome. Please get in contact via this projects issues tracker if you would like to help out.
 
 ## Getting Started
 
