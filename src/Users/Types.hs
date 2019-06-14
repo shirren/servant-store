@@ -5,12 +5,13 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Users.Types (
-    User
+    NewUserRequest (..)
+  , User
   , UserId
   , UserT (..)
 ) where
 
-import Data.Aeson ((.=), object, ToJSON, toJSON)
+import Data.Aeson ((.=), object, FromJSON, ToJSON, toJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Nullable, Table, primaryKey)
 
@@ -60,3 +61,21 @@ instance ToJSON User
             , "middleName" .= mname
             , "lastName" .= lname
             ]
+
+-- This type is used to represent the request body for a new User submitted
+-- by a client to this API which would look something like;
+--
+-- {
+--    "firstName": "John"
+--  , "middleName" : "Adrian"
+--  , "lastName" : "Doe"
+--  , "emailAddress": "john@doe.com"
+-- }
+data NewUserRequest = NewUserRequest {
+    firstName :: Text
+  , middleName :: Maybe Text
+  , lastName :: Text
+  , emailAddress :: Text
+} deriving (Generic)
+
+instance FromJSON NewUserRequest
