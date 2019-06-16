@@ -12,10 +12,10 @@ import Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
-import Products.Data (findAll, findById)
-import Products.Types (Product)
+import Products.Data (create, findAll, findById)
+import Products.Types (NewProductRequest (..), Product)
 
-import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, throwError, QueryParam)
+import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Post, ReqBody, Server, err404, throwError, QueryParam)
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -24,8 +24,9 @@ import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Server, err404, t
 type ProductApi =
   "api" :> "v1" :> "products" :>
   (
-    QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Product] -- i.e. /api/v1/products
-  :<|> Capture "perma_id" Text :> Get '[JSON] Product -- i.e. /api/v1/products/:id
+    QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Product] -- i.e. Http GET /api/v1/products
+  :<|> Capture "perma_id" Text :> Get '[JSON] Product -- i.e. Http GET /api/v1/products/:id
+  :<|> ReqBody '[JSON] NewProductRequest :> Post '[JSON] Product -- i.e. HTTP POST /api/v1/products
   )
 
 -- This function "collects" all the route handler functions, which can then
@@ -33,7 +34,8 @@ type ProductApi =
 productsServer :: Server ProductApi
 productsServer =
   getProducts :<|>
-  getProduct
+  getProduct :<|>
+  createProduct
 
 -- Route handler for GET '[JSON] [Product]
 -- findAll returns type IO [Product] which we lift to Handler [Product]
@@ -48,3 +50,11 @@ getProduct pId = do
   case result of
     Just p -> pure p
     _      -> throwError err404
+
+-- Add a new product and serialise back the persisted product which now includes a universal
+-- identifier for the product. Note that if the request does not conform to the shape of the
+-- NewProductRequest Servant generates a 400 bad request. We do not need to handle this
+-- error scenario.
+createProduct :: NewProductRequest -> Handler Product
+createProduct newProduct =
+  liftIO $ create (description newProduct) (price newProduct)

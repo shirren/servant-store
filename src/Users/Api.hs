@@ -45,6 +45,8 @@ getUsers :: Maybe PageSize -> Maybe PageNum -> Handler [User]
 getUsers pageSize pageNum =
   liftIO $ findAll (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
 
+-- Retrieve the single user as a resource. If the user does not exist then we return
+-- an Http 404 or not found.
 getUser :: Text -> Handler User
 getUser uId = do
   result <- liftIO $ findById uId
@@ -52,6 +54,12 @@ getUser uId = do
     Just user -> pure user
     _         -> throwError err404
 
+-- Register a new user in the store, and return this users details back to the client.
+-- Why do we return the user? Well each user has a unique identifier, and this is serialised
+-- back with the User in the event the client then wants to make a GET request to retrieve
+-- this particular user. Note that if the request does not conform to the shape of the
+-- NewUserRequest Servant generates a 400 bad request. We do not need to handle this
+-- error scenario.
 createUser :: NewUserRequest -> Handler User
 createUser newUser =
   liftIO $ create (emailAddress newUser) (firstName newUser) (middleName newUser) (lastName newUser)

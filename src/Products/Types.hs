@@ -5,11 +5,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Products.Types (
-    Product
+    NewProductRequest (..)
+  , Product
   , ProductT (..)
 ) where
 
-import Data.Aeson ((.=), object, ToJSON, toJSON)
+import Data.Aeson ((.=), object, FromJSON, ToJSON, toJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
 
@@ -56,3 +57,19 @@ instance ToJSON Product
             , "price" .= show p
             , "id" .= permaId
             ]
+
+-- This type is used to represent the request body for a new Product submitted
+-- by a client to this API which would look something like;
+--
+-- {
+--    "firstName": "John"
+--  , "middleName" : "Adrian"
+--  , "lastName" : "Doe"
+--  , "emailAddress": "john@doe.com"
+-- }
+data NewProductRequest = NewProductRequest {
+    description :: Text
+  , price :: Integer
+} deriving (Generic)
+
+instance FromJSON NewProductRequest

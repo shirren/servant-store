@@ -5,11 +5,12 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Orders.Types (
-    Order
+    NewOrderRequest (..)
+  , Order
   , OrderT (..)
 ) where
 
-import Data.Aeson ((.=), object, ToJSON, toJSON)
+import Data.Aeson ((.=), object, FromJSON, ToJSON, toJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
 
@@ -57,3 +58,15 @@ instance ToJSON Order
   where
     toJSON (Order _ _ _ permaId) =
       object ["id" .= permaId]
+
+-- This type is used to represent the request body for a new Order submitted
+-- by a client to this API which would look something like;
+--
+-- {
+--    "productId": "universal_product_identifier"
+-- }
+newtype NewOrderRequest = NewOrderRequest {
+  productId :: Text
+} deriving (Generic)
+
+instance FromJSON NewOrderRequest

@@ -9,18 +9,19 @@ module Orders.Api (
   , ordersServer
 ) where
 
-import Control.Monad.IO.Class (liftIO)
+import           Control.Monad.IO.Class (liftIO)
 
-import Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
-import Data.Maybe (fromMaybe)
-import Data.Text (Text)
+import           Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
+import           Data.Maybe (fromJust, fromMaybe, isJust)
+import           Data.Text (Text)
 
-import Servant
+import           Servant
 
-import Orders.Data (findByUser)
-import Orders.Types (Order)
+import           Orders.Data (create, findByUser)
+import           Orders.Types (NewOrderRequest (..), Order)
 
-import Users.Data (findById)
+import qualified Products.Data as P
+import qualified Users.Data as U
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -29,20 +30,39 @@ import Users.Data (findById)
 type OrderApi =
   "api" :> "v1" :> "users" :>
   (
-    Capture "id" Text :> "orders" :> QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Maybe Order]  -- i.e. /api/v1/users/:id/orders
+    Capture "id" Text :> "orders" :> QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Maybe Order]  -- i.e. Http GET /api/v1/users/:id/orders
+    :<|> Capture "id" Text :> "orders" :> ReqBody '[JSON] NewOrderRequest :> Post '[JSON] Order
   )
 
 -- Definition of our Order module API which maps our routes from the type
 -- OrderApi to a collection of functions that return a type of Handler.
 ordersServer :: Server OrderApi
 ordersServer =
-  getOrders
+  getOrders :<|>
+  createOrder
 
 -- findAll returns type IO [User] which we lift to Handler [User]
 getOrders :: Text -> Maybe PageSize -> Maybe PageNum -> Handler [Maybe Order]
 getOrders uId pageSize pageNum = do
-  result <- liftIO $ findById uId
-  case result of
+  -- We call the User.findById function which returns a IO (Maybe User). So
+  -- we need to call liftIO which has the signature IO a -> m a.
+  mUser <- liftIO $ U.findById uId
+  case mUser of
     Just user ->
       liftIO $ findByUser user (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
     _         -> throwError err404
+
+-- This endpoint is used when a user makes a new order for a particular product. If either the
+-- user or the product does not exist we return a 404, else we return the newly created order.
+-- Note that if the request does not conform to the shape of the
+-- NewOrderRequest Servant generates a 400 bad request. We do not need to handle this
+-- error scenario.
+createOrder :: Text -> NewOrderRequest -> Handler Order
+createOrder uId newProductRequest = do
+  -- We call the User.findById function which returns a IO (Maybe User). So
+  -- we need to call liftIO which has the signature IO a -> m a.
+  mUser <- liftIO $ U.findById uId
+  mProd <- liftIO $ P.findById (productId newProductRequest)
+  if isJust mUser && isJust mProd
+  then liftIO $ create (fromJust mUser) (fromJust mProd)
+  else throwError err404

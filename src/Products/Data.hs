@@ -13,6 +13,9 @@ import Database.Beam.Query (runSelectReturningList)
 
 import Products.Types (Product, ProductT (..))
 
+-- Retrieve all the users from the database restricting the number of Products
+-- to the PageSize. Also return a specific page number. PageNum is a zero indexed
+-- value.
 findAll :: PageSize -> PageNum -> IO [Product]
 findAll pageSize pageNum = do
   conn <- getConnection
@@ -23,6 +26,8 @@ findAll pageSize pageNum = do
       offset_ pageNum $
       all_ (storeProducts storeDb)
 
+-- Retrieve a specific product from the database using its universal identifier.
+-- As such a product may not exist we return a Maybe T.
 findById :: Text -> IO (Maybe Product)
 findById pId = do
   conn  <- getConnection
