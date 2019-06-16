@@ -15,7 +15,7 @@ import Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
-import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Post, ReqBody, Server, err404, throwError, QueryParam)
+import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, PostCreated, ReqBody, Server, err404, throwError, QueryParam)
 
 import Users.Data (create, findAll, findById)
 import Users.Types (NewUserRequest (..), User)
@@ -29,7 +29,7 @@ type UserApi =
   (
     QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [User] -- i.e. HTTP GET /api/v1/users
   :<|> Capture "id" Text :> Get '[JSON] User -- i.e. HTTP GET /api/v1/users/:id
-  :<|> ReqBody '[JSON] NewUserRequest :> Post '[JSON] User -- i.e. HTTP POST /api/v1/users
+  :<|> ReqBody '[JSON] NewUserRequest :> PostCreated '[JSON] User -- i.e. HTTP POST /api/v1/users
   )
 
 -- Definition of our User module API which maps our routes from the type

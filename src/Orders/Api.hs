@@ -31,7 +31,7 @@ type OrderApi =
   "api" :> "v1" :> "users" :>
   (
     Capture "id" Text :> "orders" :> QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Maybe Order]  -- i.e. Http GET /api/v1/users/:id/orders
-    :<|> Capture "id" Text :> "orders" :> ReqBody '[JSON] NewOrderRequest :> Post '[JSON] Order
+    :<|> Capture "id" Text :> "orders" :> ReqBody '[JSON] NewOrderRequest :> PostCreated '[JSON] Order
   )
 
 -- Definition of our Order module API which maps our routes from the type

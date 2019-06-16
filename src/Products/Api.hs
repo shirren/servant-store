@@ -15,7 +15,7 @@ import Data.Text (Text)
 import Products.Data (create, findAll, findById)
 import Products.Types (NewProductRequest (..), Product)
 
-import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Post, ReqBody, Server, err404, throwError, QueryParam)
+import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, PostCreated, ReqBody, Server, err404, throwError, QueryParam)
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -26,7 +26,7 @@ type ProductApi =
   (
     QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Product] -- i.e. Http GET /api/v1/products
   :<|> Capture "perma_id" Text :> Get '[JSON] Product -- i.e. Http GET /api/v1/products/:id
-  :<|> ReqBody '[JSON] NewProductRequest :> Post '[JSON] Product -- i.e. HTTP POST /api/v1/products
+  :<|> ReqBody '[JSON] NewProductRequest :> PostCreated '[JSON] Product -- i.e. HTTP POST /api/v1/products
   )
 
 -- This function "collects" all the route handler functions, which can then
