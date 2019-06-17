@@ -1,14 +1,17 @@
 module Orders.Data (
     create
   , findAll
+  , findById
   , findByUser
+  , remove
 ) where
 
+import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeOrders, storeUsers))
+import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Database.Beam.Postgres (runBeamPostgresDebug)
-import Database.Beam.Query (runSelectReturningList)
-import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeOrders, storeUsers))
+import Database.Beam.Query (runSelectReturningList, delete)
 
 import Orders.Types (Order, OrderT (..))
 
@@ -28,6 +31,18 @@ findAll pageSize pageNum = do
       limit_ pageSize $
       offset_ pageNum $
       all_ (storeOrders storeDb)
+
+-- Retrieve a specific order from the database using its universal identifier.
+-- As such a order may not exist we return a Maybe T.
+findById :: Text -> IO (Maybe Order)
+findById oId = do
+  conn  <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runSelectReturningOne $
+      select $ do
+        o <- all_ (storeOrders storeDb)
+        guard_ (val_ oId ==. orderPermaId o)
+        return o
 
 -- With Beam on a left join if we do not have a value we have to use Maybe Order, this
 -- can get ugly if our list is a combination of Nothings and Justs. To cleanup the
@@ -57,3 +72,11 @@ create user prod = do
       insertExpressions [Order default_ (val_ $ pk user) (val_ $ pk prod) default_]
 
     return order
+
+-- Delete the order from the database.
+remove :: Order -> IO ()
+remove order = do
+  conn <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runDelete $ delete (storeOrders storeDb)
+      (\o -> orderPermaId o ==. val_ (orderPermaId order))

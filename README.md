@@ -84,7 +84,7 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [x] Find with associations
 - [x] Insert
 - [x] Update
-- [ ] Delete
+- [x] Delete
 - [ ] Ordering
 - [x] Limits
 - [x] Offsets
@@ -95,3 +95,6 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [ ] NEST configuration
 - [ ] Tests
 - [ ] Error Handling
+
+## Feedback
+

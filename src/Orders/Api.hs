@@ -20,6 +20,7 @@ import           Servant
 import           Orders.Data (create, findByUser)
 import           Orders.Types (NewOrderRequest (..), Order)
 
+import qualified Orders.Data as O
 import qualified Products.Data as P
 import qualified Users.Data as U
 
@@ -32,6 +33,7 @@ type OrderApi =
   (
     Capture "id" Text :> "orders" :> QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [Maybe Order]  -- i.e. Http GET /api/v1/users/:id/orders
     :<|> Capture "id" Text :> "orders" :> ReqBody '[JSON] NewOrderRequest :> PostCreated '[JSON] Order
+    :<|> Capture "id" Text :> "orders" :> Capture "orderId" Text :> Delete '[JSON] NoContent
   )
 
 -- Definition of our Order module API which maps our routes from the type
@@ -39,7 +41,8 @@ type OrderApi =
 ordersServer :: Server OrderApi
 ordersServer =
   getOrders :<|>
-  createOrder
+  createOrder :<|>
+  cancelOrder
 
 -- findAll returns type IO [User] which we lift to Handler [User]
 getOrders :: Text -> Maybe PageSize -> Maybe PageNum -> Handler [Maybe Order]
@@ -65,4 +68,16 @@ createOrder uId newProductRequest = do
   mProd <- liftIO $ P.findById (productId newProductRequest)
   if isJust mUser && isJust mProd
   then liftIO $ create (fromJust mUser) (fromJust mProd)
+  else throwError err404
+
+-- In this function we cancel an order by deleting the order from the database. If either the user
+-- or the order cannot be found we return the traditional 404 status code.
+cancelOrder :: Text -> Text -> Handler NoContent
+cancelOrder uId oId = do
+  mUser  <- liftIO $ U.findById uId
+  mOrder <- liftIO $ O.findById oId
+  if isJust mUser && isJust mOrder
+  then do
+    _ <- liftIO $ O.remove $ fromJust mOrder
+    return NoContent
   else throwError err404
