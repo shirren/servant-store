@@ -6,12 +6,13 @@
 
 module Users.Types (
     NewUserRequest (..)
+  , UpdateUserRequest (..)
   , User
   , UserId
   , UserT (..)
 ) where
 
-import Data.Aeson ((.=), object, FromJSON, ToJSON, toJSON)
+import Data.Aeson ((.=), (.:), (.:?), object, FromJSON, ToJSON, toJSON, withObject, parseJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Nullable, Table, primaryKey)
 
@@ -79,3 +80,26 @@ data NewUserRequest = NewUserRequest {
 } deriving (Generic)
 
 instance FromJSON NewUserRequest
+
+-- This type is used to represent the request body for a User update submitted
+-- by a client to this API which would look something like;
+--
+-- {
+--    "firstName": "John"
+--  , "middleName" : "Adrian"
+--  , "lastName" : "Doe"
+-- }
+--
+-- Note how the users email address cannot be updated
+data UpdateUserRequest = UpdateUserRequest {
+    updatedFirstName :: Text
+  , updatedMiddleName :: Maybe Text
+  , updatedLastName :: Text
+} deriving (Generic)
+
+instance FromJSON UpdateUserRequest
+  where
+    parseJSON = withObject "UpdateUserRequest" $
+      \o -> UpdateUserRequest <$> o .: "firstName"
+                              <*> o .:? "middleName"
+                              <*> o .: "lastName"

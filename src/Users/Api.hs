@@ -15,10 +15,10 @@ import Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 
-import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, PostCreated, ReqBody, Server, err404, throwError, QueryParam)
+import Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Post, PostCreated, ReqBody, Server, err404, throwError, QueryParam)
 
-import Users.Data (create, findAll, findById)
-import Users.Types (NewUserRequest (..), User)
+import Users.Data (create, findAll, findById, updateState)
+import Users.Types (NewUserRequest (..), UpdateUserRequest (..), User, UserT (..))
 
 -- Example on how to define a nested route. The detailed route follows
 -- a very common convention of nesting resources under /api/v1. For a
@@ -30,6 +30,7 @@ type UserApi =
     QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] [User] -- i.e. HTTP GET /api/v1/users
   :<|> Capture "id" Text :> Get '[JSON] User -- i.e. HTTP GET /api/v1/users/:id
   :<|> ReqBody '[JSON] NewUserRequest :> PostCreated '[JSON] User -- i.e. HTTP POST /api/v1/users
+  :<|> Capture "id" Text :> ReqBody '[JSON] UpdateUserRequest :> Post '[JSON] User -- i.e. HTTP POST /api/v1/users/:id
   )
 
 -- Definition of our User module API which maps our routes from the type
@@ -38,7 +39,8 @@ usersServer :: Server UserApi
 usersServer =
   getUsers :<|>
   getUser :<|>
-  createUser
+  createUser :<|>
+  updateUser
 
 -- findAll returns type IO [User] which we lift to Handler [User]
 getUsers :: Maybe PageSize -> Maybe PageNum -> Handler [User]
@@ -63,3 +65,18 @@ getUser uId = do
 createUser :: NewUserRequest -> Handler User
 createUser newUser =
   liftIO $ create (emailAddress newUser) (firstName newUser) (middleName newUser) (lastName newUser)
+
+-- This endpoint allows a client to update user state. Note that even though the middle name is optional,
+-- if the request does not include the middle name it is overwritten with Null in the database. This was
+-- implemented like so for simplisity.
+updateUser :: Text -> UpdateUserRequest -> Handler User
+updateUser uId userData = do
+  mUser <- liftIO $ findById uId
+  case mUser of
+    Just u ->
+      liftIO $ updateState u {
+          userFirstName = updatedFirstName userData
+        , userMiddleName = updatedMiddleName userData
+        , userLastName = updatedLastName userData }
+    _      ->
+      throwError err404

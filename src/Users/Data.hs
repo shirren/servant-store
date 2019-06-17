@@ -5,12 +5,13 @@ module Users.Data (
     create
   , findAll
   , findById
+  , updateState
 ) where
 
 import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeUsers))
 import Data.Text (Text)
 import Database.Beam
-import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
+import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList, runUpdateReturningList)
 import Database.Beam.Postgres (runBeamPostgresDebug)
 import Database.Beam.Query (runSelectReturningList)
 
@@ -46,5 +47,14 @@ create emailAddress firstName middleName lastName = do
   runBeamPostgresDebug putStrLn conn $ do
     [user] <- runInsertReturningList $ insert (storeUsers storeDb) $
       insertExpressions [User default_ (val_ emailAddress) (val_ firstName) (val_ middleName) (val_ lastName) default_]
+
+    return user
+
+-- Update the users state based on what is currently stored in the User record
+updateState :: User -> IO User
+updateState userToUpdate = do
+  conn <- getConnection
+  runBeamPostgresDebug putStrLn conn $ do
+    [user] <- runUpdateReturningList $ save (storeUsers storeDb) userToUpdate
 
     return user

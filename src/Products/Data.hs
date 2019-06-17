@@ -2,12 +2,13 @@ module Products.Data (
     create
   , findAll
   , findById
+  , updateState
 ) where
 
 import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeProducts))
 import Data.Text (Text)
 import Database.Beam
-import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
+import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList, runUpdateReturningList)
 import Database.Beam.Postgres (runBeamPostgresDebug)
 import Database.Beam.Query (runSelectReturningList)
 
@@ -46,5 +47,14 @@ create desc price = do
   runBeamPostgresDebug putStrLn conn $ do
     [prod] <- runInsertReturningList $ insert (storeProducts storeDb) $
       insertExpressions [Product default_ (val_ desc) (val_ price) default_]
+
+    return prod
+
+-- Update the product state based on what is currently stored in the Product record
+updateState :: Product -> IO Product
+updateState productToUpdate = do
+  conn <- getConnection
+  runBeamPostgresDebug putStrLn conn $ do
+    [prod] <- runUpdateReturningList $ save (storeProducts storeDb) productToUpdate
 
     return prod

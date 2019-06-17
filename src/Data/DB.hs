@@ -56,4 +56,4 @@ storeDb = defaultDbSettings
 
 getConnection :: IO Connection
 getConnection =
-  connectPostgreSQL "dbname=store_dev host=localhost user=? password=? port=5432"
+  connectPostgreSQL "dbname=store_dev host=localhost user=postgres password=root port=5432"
