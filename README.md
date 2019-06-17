@@ -62,7 +62,15 @@ To run the application use the command `cabal new-run`. The application has been
 
 ## Domain Model
 
-The domain model is intentionally simple and made familiar on purpose. A simple store with users, products and orders. Each of the key domain elements are separated into a namespace of its own. In each module (e.g. users) you will find three modules API, Data and Types. API deals with the Http layer of the module, constructed using the Servant library. The Data layer deals persistence functions, constructed using the Beam library. The Types layer provides the core type definitions for the namespace.
+The domain model is intentionally simple and made familiar on purpose. A simple store with users, products and orders. Each of the key domain elements are separated into a namespace of its own. In each module (e.g. users) you will find three modules; API, Data and Types. API deals with the Http layer of the module, constructed using the Servant library. The Data layer deals persistence functions, constructed using the Beam library. The Types layer provides the core type definitions for the namespace.
+
+## Resource Model
+
+### Users
+
+### Products
+
+### Orders
 
 ## Checklist
 
@@ -75,7 +83,7 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [x] Find by id
 - [x] Find with associations
 - [x] Insert
-- [ ] Update
+- [x] Update
 - [ ] Delete
 - [ ] Ordering
 - [x] Limits
