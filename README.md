@@ -90,7 +90,7 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [x] Offsets
 - [ ] Migrations
 - [ ] Custom column names
-- [ ] JSON Api
+- [ ] JSON Api - IN PROGRESS
 - [ ] Authorisation (OAuth2)
 - [ ] NEST configuration
 - [ ] Tests
