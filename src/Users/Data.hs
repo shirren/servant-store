@@ -2,7 +2,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Users.Data (
-    create
+  countUsers
+  , create
   , findAll
   , findById
   , updateState
@@ -24,10 +25,18 @@ findAll pageSize pageNum = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-      orderBy_ (\u -> (asc_ (userFirstName u), desc_ (userLastName u))) $
-      limit_ pageSize $
-      offset_ pageNum $
-      all_ (storeUsers storeDb)
+        orderBy_ (\u -> (asc_ (userFirstName u), desc_ (userLastName u))) $
+        limit_ (toInteger pageSize) $
+        offset_ (toInteger $ pageNum * pageSize) $
+        all_ (storeUsers storeDb)
+
+countUsers :: IO (Maybe Int)
+countUsers = do
+  conn  <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runSelectReturningOne $
+      select $
+        aggregate_ (const countAll_) (all_ (storeUsers storeDb))
 
 findById :: Text -> IO (Maybe User)
 findById uId = do

@@ -28,8 +28,8 @@ findAll pageSize pageNum = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-      limit_ pageSize $
-      offset_ pageNum $
+      limit_ (toInteger pageSize) $
+      offset_ (toInteger $ pageNum * pageSize) $
       all_ (storeOrders storeDb)
 
 -- Retrieve a specific order from the database using its universal identifier.
@@ -53,8 +53,8 @@ findByUser user pageSize pageNum = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-      limit_ pageSize $
-      offset_ pageNum $ do
+      limit_ (toInteger pageSize) $
+      offset_ (toInteger pageNum) $ do
         u <- all_ (storeUsers storeDb)
         guard_ (val_ (userPermaId user) ==. userPermaId u)
         order <- leftJoin_ (all_ (storeOrders storeDb))

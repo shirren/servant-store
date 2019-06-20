@@ -28,8 +28,8 @@ import Products.Types (ProductT (..))
 import Users.Types (UserT (..))
 
 -- We can specify limits on the number of rows we would like back from the database
-type PageSize = Integer
-type PageNum = Integer
+type PageSize = Int
+type PageNum = Int
 
 defaultPageSize :: PageSize
 defaultPageSize = 10

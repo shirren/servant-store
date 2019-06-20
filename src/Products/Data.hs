@@ -23,8 +23,8 @@ findAll pageSize pageNum = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-      limit_ pageSize $
-      offset_ pageNum $
+      limit_ (toInteger pageSize) $
+      offset_ (toInteger $ pageNum * pageSize) $
       all_ (storeProducts storeDb)
 
 -- Retrieve a specific product from the database using its universal identifier.
