@@ -112,9 +112,9 @@ Helper function that maps from UserT to UserResource
 -}
 mkUserResource :: User -> UR.UserResource
 mkUserResource user = UR.UserResource {
-    resourceId = userPermaId user
-  , emailAddress = userEmail user
-  , firstName = userFirstName user
-  , middleName = userMiddleName user
-  , lastName = userLastName user
+    UR.resourceId = userPermaId user
+  , UR.emailAddress = userEmail user
+  , UR.firstName = userFirstName user
+  , UR.middleName = userMiddleName user
+  , UR.lastName = userLastName user
   }

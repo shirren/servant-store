@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Users.Resources (
-    UserResource (..)
+module Orders.Resources (
+    OrderResource (..)
   , toResource
   ) where
 
@@ -12,19 +12,15 @@ import           Data.Text (Text)
 import           Network.JSONApi (ResourcefulEntity (..))
 import qualified Network.JSONApi as JSONApi
 
-data UserResource = UserResource
+newtype OrderResource = OrderResource
   { resourceId :: Text
-  , emailAddress :: Text
-  , firstName :: Text
-  , middleName :: Maybe Text
-  , lastName  :: Text
   } deriving (Eq, Show)
 
-$(deriveJSON defaultOptions ''UserResource)
+$(deriveJSON defaultOptions ''OrderResource)
 
-instance ResourcefulEntity UserResource where
+instance ResourcefulEntity OrderResource where
   resourceIdentifier = resourceId
-  resourceType _ = "users"
+  resourceType _ = "orders"
   resourceLinks = Just . JSONApi.showLink
   resourceMetaData _ = Nothing
   resourceRelationships _ = Nothing

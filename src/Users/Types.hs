@@ -12,7 +12,7 @@ module Users.Types (
   , UserT (..)
 ) where
 
-import Data.Aeson ((.=), (.:), (.:?), object, FromJSON, ToJSON, toJSON, withObject, parseJSON)
+import Data.Aeson ((.:), (.:?), FromJSON, parseJSON, withObject)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Nullable, Table, primaryKey)
 
@@ -51,50 +51,39 @@ type User = UserT Identity
 -- Our primary key for UserT
 type UserId = PrimaryKey UserT Identity
 
--- We serialise our type using a representation that is more front
--- end friendly, plus we do not want to really expose the names of
--- our internal fields.
-instance ToJSON User
-  where
-    toJSON (User _ e fname mname lname _) =
-      object ["email" .= e
-            , "firstName" .= fname
-            , "middleName" .= mname
-            , "lastName" .= lname
-            ]
-
--- This type is used to represent the request body for a new User submitted
--- by a client to this API which would look something like;
---
--- {
---    "firstName": "John"
---  , "middleName" : "Adrian"
---  , "lastName" : "Doe"
---  , "emailAddress": "john@doe.com"
--- }
+{- |
+This type is used to represent the request body for a new User submitted
+by a client to this API which would look something like;
+{
+   "firstName": "John"
+ , "middleName" : "Adrian"
+ , "lastName" : "Doe"
+ , "emailAddress": "john@doe.com"
+}
+-}
 data NewUserRequest = NewUserRequest {
-    firstName :: Text
-  , middleName :: Maybe Text
-  , lastName :: Text
-  , emailAddress :: Text
+  firstName :: Text
+, middleName :: Maybe Text
+, lastName :: Text
+, emailAddress :: Text
 } deriving (Generic)
 
 instance FromJSON NewUserRequest
 
--- This type is used to represent the request body for a User update submitted
--- by a client to this API which would look something like;
---
--- {
---    "firstName": "John"
---  , "middleName" : "Adrian"
---  , "lastName" : "Doe"
--- }
---
--- Note how the users email address cannot be updated
+{- |
+This type is used to represent the request body for a User update submitted
+by a client to this API which would look something like;
+{
+   "firstName": "John"
+ , "middleName" : "Adrian"
+ , "lastName" : "Doe"
+}
+Note how the users email address cannot be updated
+-}
 data UpdateUserRequest = UpdateUserRequest {
-    updatedFirstName :: Text
-  , updatedMiddleName :: Maybe Text
-  , updatedLastName :: Text
+  updatedFirstName :: Text
+, updatedMiddleName :: Maybe Text
+, updatedLastName :: Text
 } deriving (Generic)
 
 instance FromJSON UpdateUserRequest

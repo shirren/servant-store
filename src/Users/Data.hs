@@ -30,6 +30,9 @@ findAll pageSize pageNum = do
         offset_ (toInteger $ pageNum * pageSize) $
         all_ (storeUsers storeDb)
 
+{- |
+Counts the total number of users in the database via the Beam aggregate function.
+-}
 countUsers :: IO (Maybe Int)
 countUsers = do
   conn  <- getConnection

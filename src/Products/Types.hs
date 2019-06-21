@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
 module Products.Types (
@@ -10,7 +9,7 @@ module Products.Types (
   , ProductT (..)
 ) where
 
-import Data.Aeson ((.=), object, FromJSON, ToJSON, toJSON)
+import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import Database.Beam (Beamable, Columnar, Identity, PrimaryKey, Table, primaryKey)
 
@@ -32,44 +31,39 @@ deriving instance Eq Product
 deriving instance Show ProductId
 deriving instance Eq ProductId
 
--- Tables should have a primary key. In this case we set the column
--- productId as the primary key.
+{- |
+Tables should have a primary key. In this case we set the column
+productId as the primary key.
+-}
 instance Table ProductT where
   data PrimaryKey ProductT f = ProductId (Columnar f Int)
     deriving (Generic, Beamable)
   primaryKey = ProductId . _productId
 
--- Let's define some type synonyms so we don't have to work with ProductT or Columnar directly.
--- Columnar is a type family defined such that for any x, Columnar Identity x = x.
--- This strategy is known as defunctionalization or higher-kinded data types.
+{- |
+Let's define some type synonyms so we don't have to work with ProductT or Columnar directly.
+Columnar is a type family defined such that for any x, Columnar Identity x = x.
+This strategy is known as defunctionalization or higher-kinded data types.
+-}
 type Product = ProductT Identity
 
--- Our primary key for ProductT
+{- |
+Our primary key for ProductT
+-}
 type ProductId = PrimaryKey ProductT Identity
 
--- We serialise our type using a representation that is more front
--- end friendly, plus we do not want to really expose the names of
--- our internal fields.
-instance ToJSON Product
-  where
-    toJSON (Product _ d p permaId) =
-      object ["description" .= d
-            , "price" .= show p
-            , "id" .= permaId
-            ]
+{- |
+This type is used to represent the request body for a new Product submitted
+by a client to this API which would look something like;
 
--- This type is used to represent the request body for a new Product submitted
--- by a client to this API which would look something like;
---
--- {
---    "firstName": "John"
---  , "middleName" : "Adrian"
---  , "lastName" : "Doe"
---  , "emailAddress": "john@doe.com"
--- }
+{
+ "description": "toothpaste"
+ , "price" : 250
+}
+-}
 data NewProductRequest = NewProductRequest {
-    description :: Text
-  , price :: Integer
+  description :: Text
+, price :: Integer
 } deriving (Generic)
 
 instance FromJSON NewProductRequest

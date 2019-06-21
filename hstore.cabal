@@ -50,13 +50,16 @@ library
   exposed-modules:      Data.DB
                       , Orders.Api
                       , Orders.Data
+                      , Orders.Resources
                       , Orders.Types
                       , Products.Api
                       , Products.Data
+                      , Products.Resources
                       , Products.Types
                       , Store
                       , Users.Api
                       , Users.Data
+                      , Users.Resources
                       , Users.Types
 
   -- Modules included in this library but not exported.
@@ -71,6 +74,7 @@ library
                       , beam-core
                       , beam-migrate
                       , beam-postgres
+                      , json-api-lib      >= 0.1 && < 0.2
                       , postgresql-simple
                       , servant-server
                       , text
@@ -103,6 +107,7 @@ executable hstore
                       , beam-migrate
                       , beam-postgres
                       , hstore
+                      , json-api-lib      >= 0.1 && < 0.2
                       , postgresql-simple
                       , servant-server
                       , text

@@ -1,5 +1,6 @@
 module Products.Data (
-    create
+    countProducts
+  , create
   , findAll
   , findById
   , updateState
@@ -38,6 +39,17 @@ findById pId = do
         prod <- all_ (storeProducts storeDb)
         guard_ (val_ pId ==. productPermaId prod)
         return prod
+
+{- |
+Counts the total number of products in the database via the Beam aggregate function.
+-}
+countProducts :: IO (Maybe Int)
+countProducts = do
+  conn  <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runSelectReturningOne $
+      select $
+        aggregate_ (const countAll_) (all_ (storeProducts storeDb))
 
 -- Persist the product to the database, and then return the newly created product
 -- which should also now have a unique identifier auto generated for the product.

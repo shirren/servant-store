@@ -1,5 +1,6 @@
 module Orders.Data (
-    create
+    countOrders
+  , create
   , findAll
   , findById
   , findByUser
@@ -53,14 +54,25 @@ findByUser user pageSize pageNum = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-      limit_ (toInteger pageSize) $
-      offset_ (toInteger pageNum) $ do
-        u <- all_ (storeUsers storeDb)
-        guard_ (val_ (userPermaId user) ==. userPermaId u)
-        order <- leftJoin_ (all_ (storeOrders storeDb))
-                           (\order -> orderUser order `references_` u)
-        guard_ (isJust_ order)
-        return order
+        limit_ (toInteger pageSize) $
+        offset_ (toInteger pageNum) $ do
+          u <- all_ (storeUsers storeDb)
+          guard_ (val_ (userPermaId user) ==. userPermaId u)
+          order <- leftJoin_ (all_ (storeOrders storeDb))
+                            (\order -> orderUser order `references_` u)
+          guard_ (isJust_ order)
+          return order
+
+{- |
+Counts the total number of products in the database via the Beam aggregate function.
+-}
+countOrders :: IO (Maybe Int)
+countOrders = do
+  conn <- getConnection
+  runBeamPostgresDebug putStrLn conn $
+    runSelectReturningOne $
+      select $
+        aggregate_ (const countAll_) (all_ (storeOrders storeDb))
 
 -- Persist the order to the database, and then return the newly created order
 -- The order is also associated to the product and user
