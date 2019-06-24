@@ -7,12 +7,14 @@ module Orders.Data (
   , remove
 ) where
 
-import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeOrders, storeUsers))
+import Data.DB (getConnection, storeDb, StoreDb (storeOrders, storeUsers))
 import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList)
 import Database.Beam.Postgres (runBeamPostgresDebug)
 import Database.Beam.Query (runSelectReturningList, delete)
+
+import Network.JSONApi
 
 import Orders.Types (Order, OrderT (..))
 
@@ -24,7 +26,7 @@ import Users.Types (User, UserT (userPermaId))
 -- can get ugly if our list is a combination of Nothings and Justs. To cleanup the
 -- result set we use isJust to filter out the Nothings.
 findAll :: PageSize -> PageNum -> IO [Order]
-findAll pageSize pageNum = do
+findAll (PageSize pageSize) (PageNum pageNum) = do
   conn <- getConnection
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
@@ -49,12 +51,12 @@ findById oId = do
 -- can get ugly if our list is a combination of Nothings and Justs. To cleanup the
 -- result set we use isJust to filter out the Nothings.
 findByUser :: User -> PageSize -> PageNum -> IO [Maybe Order]
-findByUser user pageSize pageNum = do
+findByUser user (PageSize pageSize) (PageNum pageNum) = do
   conn <- getConnection
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-        limit_ (toInteger pageSize) $
+        limit_ (fromIntegral pageSize) $
         offset_ (toInteger pageNum) $ do
           u <- all_ (storeUsers storeDb)
           guard_ (val_ (userPermaId user) ==. userPermaId u)

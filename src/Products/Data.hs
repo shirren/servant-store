@@ -6,12 +6,14 @@ module Products.Data (
   , updateState
 ) where
 
-import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeProducts))
+import Data.DB (getConnection, storeDb, StoreDb (storeProducts))
 import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList, runUpdateReturningList)
 import Database.Beam.Postgres (runBeamPostgresDebug)
 import Database.Beam.Query (runSelectReturningList)
+
+import Network.JSONApi
 
 import Products.Types (Product, ProductT (..))
 
@@ -19,7 +21,7 @@ import Products.Types (Product, ProductT (..))
 -- to the PageSize. Also return a specific page number. PageNum is a zero indexed
 -- value.
 findAll :: PageSize -> PageNum -> IO [Product]
-findAll pageSize pageNum = do
+findAll (PageSize pageSize) (PageNum pageNum) = do
   conn <- getConnection
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $

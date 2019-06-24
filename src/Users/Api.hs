@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
 -- The API is the entry point into the module. Here we only export the definition
@@ -9,13 +10,12 @@ module Users.Api (
   , usersServer
 ) where
 
+import           Common.Paging
 import           Control.Monad.IO.Class (liftIO)
 
-import           Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
-import           Data.Maybe (fromMaybe)
 import           Data.Text (Text)
 
-import qualified Network.JSONApi as JSONApi
+import           Network.JSONApi
 
 import           Servant ((:>), (:<|>)(..), Capture, Get, Handler, JSON, Post, PostCreated, ReqBody, Server, err404, throwError, QueryParam)
 
@@ -33,10 +33,10 @@ https://qfpl.io/posts/nested-routes-in-servant/
 type UserApi =
   "api" :> "v1" :> "users" :>
   (
-    QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] (JSONApi.Document UR.UserResource) -- i.e. HTTP GET /api/v1/users
-  :<|> Capture "id" Text :> Get '[JSON] (JSONApi.Document UR.UserResource) -- i.e. HTTP GET /api/v1/users/:id
-  :<|> ReqBody '[JSON] NewUserRequest :> PostCreated '[JSON] (JSONApi.Document UR.UserResource) -- i.e. HTTP POST /api/v1/users
-  :<|> Capture "id" Text :> ReqBody '[JSON] UpdateUserRequest :> Post '[JSON] (JSONApi.Document UR.UserResource) -- i.e. HTTP POST /api/v1/users/:id
+    QueryParam "page[size]" Int :> QueryParam "page[number]" Int :> Get '[JSON] (Document UR.UserResource) -- i.e. HTTP GET /api/v1/users
+  :<|> Capture "id" Text :> Get '[JSON] (Document UR.UserResource) -- i.e. HTTP GET /api/v1/users/:id
+  :<|> ReqBody '[JSON] NewUserRequest :> PostCreated '[JSON] (Document UR.UserResource) -- i.e. HTTP POST /api/v1/users
+  :<|> Capture "id" Text :> ReqBody '[JSON] UpdateUserRequest :> Post '[JSON] (Document UR.UserResource) -- i.e. HTTP POST /api/v1/users/:id
   )
 
 {- |
@@ -54,24 +54,23 @@ usersServer =
 FindAll returns type IO [User] which we lift to Handler (JSONApi.Document UR.UserResource)
 which is [User] -> UserResource.
 -}
-getUsers :: Maybe PageSize -> Maybe PageNum -> Handler (JSONApi.Document UR.UserResource)
+getUsers :: Maybe Int -> Maybe Int -> Handler (Document UR.UserResource)
 getUsers pageSize pageNum = do
-  users <- liftIO $ findAll (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
+  users     <- liftIO $ findAll (wrapPgSize pageSize) (wrapPgNum pageNum)
   userCount <- liftIO countUsers
   let userResources = mkUserResource <$> users
-  pure $ JSONApi.mkDocument userResources
-         (Just $ JSONApi.indexLinks (head userResources) pageSize pageNum userCount)
-         (Just $ JSONApi.mkMeta $ JSONApi.Pagination pageSize pageNum userCount)
+  let pagination = Pagination (wrapPgSize pageSize) (wrapPgNum pageNum) (wrapResCount userCount)
+  pure $ mkDocument userResources (Just $ indexLinks "/users" pagination) (Just $ mkMeta pagination)
 
 {- |
 Retrieve the single user as a resource. If the user does not exist then we return
 an Http 404 or not found.
 -}
-getUser :: Text -> Handler (JSONApi.Document UR.UserResource)
+getUser :: Text -> Handler (Document UR.UserResource)
 getUser uId = do
   result <- liftIO $ findById uId
   case result of
-    Just user -> pure $ JSONApi.mkDocument [mkUserResource user] Nothing Nothing
+    Just user -> pure $ mkSimpleDocument [mkUserResource user]
     _         -> throwError err404
 
 {- |
@@ -84,17 +83,17 @@ Note that if the request does not conform to the shape of the
 NewUserRequest Servant generates a 400 bad request. We do not need to handle this
 error scenario.
 -}
-createUser :: NewUserRequest -> Handler (JSONApi.Document UR.UserResource)
+createUser :: NewUserRequest -> Handler (Document UR.UserResource)
 createUser newUser = do
   user <- liftIO $ create (emailAddress newUser) (firstName newUser) (middleName newUser) (lastName newUser)
-  pure $ JSONApi.mkDocument [mkUserResource user] Nothing Nothing
+  pure $ mkSimpleDocument [mkUserResource user]
 
 {- |
 This endpoint allows a client to update user state. Note that even though the middle name is optional,
 if the request does not include the middle name it is overwritten with Null in the database. This was
 implemented like so for simplisity.
 -}
-updateUser :: Text -> UpdateUserRequest -> Handler (JSONApi.Document UR.UserResource)
+updateUser :: Text -> UpdateUserRequest -> Handler (Document UR.UserResource)
 updateUser uId userData = do
   mUser <- liftIO $ findById uId
   case mUser of
@@ -103,7 +102,7 @@ updateUser uId userData = do
           userFirstName = updatedFirstName userData
         , userMiddleName = updatedMiddleName userData
         , userLastName = updatedLastName userData }
-      pure $ JSONApi.mkDocument [mkUserResource user] Nothing Nothing
+      pure $ mkSimpleDocument [mkUserResource user]
     _      ->
       throwError err404
 

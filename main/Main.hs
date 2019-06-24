@@ -19,7 +19,9 @@ import Users.Api (UserApi, usersServer)
 type API = UserApi :<|> ProductApi :<|> OrderApi
 
 server :: Server API
-server = usersServer :<|> productsServer :<|> ordersServer
+server = usersServer :<|>
+         productsServer :<|>
+         ordersServer
 
 app :: Application
 app = serve (Proxy :: Proxy API) server

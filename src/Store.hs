@@ -8,6 +8,8 @@ module Store (
 
 import Control.Monad
 
+import Network.JSONApi
+
 import qualified Orders.Data as O
 import qualified Products.Data as P
 import qualified Users.Data as U
@@ -16,9 +18,9 @@ import qualified Users.Data as U
 -- in the system.
 seedData :: IO ()
 seedData = do
-  users    <- U.findAll 10 0
-  products <- P.findAll 10 0
-  orders   <- O.findAll 10 0
+  users    <- U.findAll (PageSize 10) (PageNum 0)
+  products <- P.findAll (PageSize 10) (PageNum 0)
+  orders   <- O.findAll (PageSize 10) (PageNum 0)
   when (null users) $ do
     _ <- U.create "john@doe.com" "John" (Just "Adrian") "Doe"
     _ <- U.create "jane@doe.com" "Jane" Nothing "Doe"
@@ -30,8 +32,8 @@ seedData = do
     putStrLn "Inserted products"
 
   when (null orders) $ do
-    reloadedUsers    <- U.findAll 10 0
-    reloadedProducts <- P.findAll 10 0
+    reloadedUsers    <- U.findAll (PageSize 10) (PageNum 0)
+    reloadedProducts <- P.findAll (PageSize 10) (PageNum 0)
     _ <- O.create (head reloadedUsers) (head reloadedProducts)
     _ <- O.create (last reloadedUsers) (last reloadedProducts)
     putStrLn "Inserted orders"

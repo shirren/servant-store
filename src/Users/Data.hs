@@ -9,18 +9,20 @@ module Users.Data (
   , updateState
 ) where
 
-import Data.DB (getConnection, PageNum, PageSize, storeDb, StoreDb (storeUsers))
+import Data.DB (getConnection, storeDb, StoreDb (storeUsers))
 import Data.Text (Text)
 import Database.Beam
 import Database.Beam.Backend.SQL.BeamExtensions (runInsertReturningList, runUpdateReturningList)
 import Database.Beam.Postgres (runBeamPostgresDebug)
 import Database.Beam.Query (runSelectReturningList)
 
+import Network.JSONApi
+
 -- We import all the User entity functions as we can possibly sort of any of them.
 import Users.Types (User, UserT (..))
 
 findAll :: PageSize -> PageNum -> IO [User]
-findAll pageSize pageNum = do
+findAll (PageSize pageSize) (PageNum pageNum) = do
   conn  <- getConnection
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $

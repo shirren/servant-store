@@ -63,7 +63,8 @@ library
                       , Users.Types
 
   -- Modules included in this library but not exported.
-  -- other-modules:
+  other-modules:
+                      Common.Paging
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
@@ -74,7 +75,7 @@ library
                       , beam-core
                       , beam-migrate
                       , beam-postgres
-                      , json-api-lib      >= 0.1 && < 0.2
+                      , json-api-lib      >= 0.1.1.1 && < 0.2
                       , postgresql-simple
                       , servant-server
                       , text

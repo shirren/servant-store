@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Products.Api (
@@ -6,13 +7,12 @@ module Products.Api (
   productsServer
 ) where
 
+import           Common.Paging
 import           Control.Monad.IO.Class (liftIO)
 
-import           Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
-import           Data.Maybe (fromMaybe)
 import           Data.Text (Text)
 
-import qualified Network.JSONApi as JSONApi
+import           Network.JSONApi
 
 import           Products.Data (countProducts, create, findAll, findById, updateState)
 import qualified Products.Resources as PR
@@ -30,10 +30,10 @@ https://qfpl.io/posts/nested-routes-in-servant/
 type ProductApi =
   "api" :> "v1" :> "products" :>
   (
-    QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] (JSONApi.Document PR.ProductResource) -- i.e. Http GET /api/v1/products
-  :<|> Capture "perma_id" Text :> Get '[JSON] (JSONApi.Document PR.ProductResource) -- i.e. Http GET /api/v1/products/:id
-  :<|> ReqBody '[JSON] NewProductRequest :> PostCreated '[JSON] (JSONApi.Document PR.ProductResource) -- i.e. HTTP POST /api/v1/products
-  :<|> Capture "perma_id" Text :> ReqBody '[JSON] NewProductRequest :> Post '[JSON] (JSONApi.Document PR.ProductResource) -- i.e. HTTP POST /api/v1/products/:id
+    QueryParam "page[size]" Int :> QueryParam "page[number]" Int :> Get '[JSON] (Document PR.ProductResource) -- i.e. Http GET /api/v1/products
+  :<|> Capture "perma_id" Text :> Get '[JSON] (Document PR.ProductResource) -- i.e. Http GET /api/v1/products/:id
+  :<|> ReqBody '[JSON] NewProductRequest :> PostCreated '[JSON] (Document PR.ProductResource) -- i.e. HTTP POST /api/v1/products
+  :<|> Capture "perma_id" Text :> ReqBody '[JSON] NewProductRequest :> Post '[JSON] (Document PR.ProductResource) -- i.e. HTTP POST /api/v1/products/:id
   )
 
 {- |
@@ -51,24 +51,23 @@ productsServer =
 Route handler for GET '[JSON] [Product]
 findAll returns type IO [Product] which we lift to Handler [Product]
 -}
-getProducts :: Maybe PageSize -> Maybe PageNum -> Handler (JSONApi.Document PR.ProductResource)
+getProducts :: Maybe Int -> Maybe Int -> Handler (Document PR.ProductResource)
 getProducts pageSize pageNum = do
-  products <- liftIO $ findAll (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
+  products <- liftIO $ findAll (wrapPgSize pageSize) (wrapPgNum pageNum)
   productCount <- liftIO countProducts
   let productResources = mkProductResource <$> products
-  pure $ JSONApi.mkDocument productResources
-         (Just $ JSONApi.indexLinks (head productResources) pageSize pageNum productCount)
-         (Just $ JSONApi.mkMeta $ JSONApi.Pagination pageSize pageNum productCount)
+  let pagination = Pagination (wrapPgSize pageSize) (wrapPgNum pageNum) (wrapResCount productCount)
+  pure $ mkDocument productResources (Just $ indexLinks "/products" pagination) (Just $ mkMeta pagination)
 
 {- |
 Route handler for Capture "perma_id" Text :> Get '[JSON] Product
 -}
-getProduct :: Text -> Handler (JSONApi.Document PR.ProductResource)
+getProduct :: Text -> Handler (Document PR.ProductResource)
 getProduct pId = do
   mProduct <- liftIO $ findById pId
   case mProduct of
     Just p ->
-      pure $ JSONApi.mkDocument [mkProductResource p] Nothing Nothing
+      pure $ mkSimpleDocument [mkProductResource p]
     _      ->
       throwError err404
 
@@ -78,23 +77,23 @@ identifier for the product. Note that if the request does not conform to the sha
 NewProductRequest Servant generates a 400 bad request. We do not need to handle this
 error scenario.
 -}
-createProduct :: NewProductRequest -> Handler (JSONApi.Document PR.ProductResource)
+createProduct :: NewProductRequest -> Handler (Document PR.ProductResource)
 createProduct newProduct = do
   p <- liftIO $ create (description newProduct) (price newProduct)
-  pure $ JSONApi.mkDocument [mkProductResource p] Nothing Nothing
+  pure $ mkSimpleDocument [mkProductResource p]
 
   {- |
 This endpoint allows a client to update product state. Note how we use NewProductRequest for the
 update as well. This is because we expose the same properties for update as we do for a create.
 Refer to the user update where we only allow a subset of properties in an update.
 -}
-updateProduct :: Text -> NewProductRequest -> Handler (JSONApi.Document PR.ProductResource)
+updateProduct :: Text -> NewProductRequest -> Handler (Document PR.ProductResource)
 updateProduct pId productData = do
   mProduct <- liftIO $ findById pId
   case mProduct of
     Just p -> do
       updatedP <- liftIO $ updateState p { productDescription = description productData, productPrice = price productData }
-      pure $ JSONApi.mkDocument [mkProductResource updatedP] Nothing Nothing
+      pure $ mkSimpleDocument [mkProductResource updatedP]
     _      ->
       throwError err404
 

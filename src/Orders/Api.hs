@@ -10,13 +10,14 @@ module Orders.Api (
   , ordersServer
 ) where
 
+
+import           Common.Paging
 import           Control.Monad.IO.Class (liftIO)
 
-import           Data.DB (defaultPageNum, defaultPageSize, PageNum, PageSize)
-import           Data.Maybe (fromJust, fromMaybe, isJust)
+import           Data.Maybe (fromJust, isJust)
 import           Data.Text (Text)
 
-import qualified Network.JSONApi as JSONApi
+import           Network.JSONApi
 
 import           Servant
 
@@ -38,8 +39,8 @@ https://qfpl.io/posts/nested-routes-in-servant/
 type OrderApi =
   "api" :> "v1" :> "users" :>
   (
-    Capture "id" Text :> "orders" :> QueryParam "page[size]" PageSize :> QueryParam "page[number]" PageNum :> Get '[JSON] (JSONApi.Document OR.OrderResource) -- i.e. Http GET /api/v1/users/:id/orders
-    :<|> Capture "id" Text :> "orders" :> ReqBody '[JSON] NewOrderRequest :> PostCreated '[JSON] (JSONApi.Document OR.OrderResource)
+    Capture "id" Text :> "orders" :> QueryParam "page[size]" Int :> QueryParam "page[number]" Int :> Get '[JSON] (Document OR.OrderResource) -- i.e. Http GET /api/v1/users/:id/orders
+    :<|> Capture "id" Text :> "orders" :> ReqBody '[JSON] NewOrderRequest :> PostCreated '[JSON] (Document OR.OrderResource)
     :<|> Capture "id" Text :> "orders" :> Capture "orderId" Text :> Delete '[JSON] NoContent
   )
 
@@ -56,19 +57,18 @@ ordersServer =
 {- |
 findAll returns type IO [User] which we lift to Handler [User]
 -}
-getOrders :: Text -> Maybe PageSize -> Maybe PageNum -> Handler (JSONApi.Document OR.OrderResource)
+getOrders :: Text -> Maybe Int -> Maybe Int -> Handler (Document OR.OrderResource)
 getOrders uId pageSize pageNum = do
   -- We call the User.findById function which returns a IO (Maybe User). So
   -- we need to call liftIO which has the signature IO a -> m a.
   mUser <- liftIO $ U.findById uId
   case mUser of
     Just user -> do
-      orders <- liftIO $ findByUser user (fromMaybe defaultPageSize pageSize) (fromMaybe defaultPageNum pageNum)
+      orders <- liftIO $ findByUser user (wrapPgSize pageSize) (wrapPgNum pageNum)
       orderCount <- liftIO countOrders
       let orderResources = mkOrderResource <$> orders
-      pure $ JSONApi.mkDocument orderResources
-           (Just $ JSONApi.indexLinks (head orderResources) pageSize pageNum orderCount)
-           (Just $ JSONApi.mkMeta $ JSONApi.Pagination pageSize pageNum orderCount)
+      let pagination = Pagination (wrapPgSize pageSize) (wrapPgNum pageNum) (wrapResCount orderCount)
+      pure $ mkDocument orderResources (Just $ indexLinks "/orders" pagination) (Just $ mkMeta pagination)
     _         -> throwError err404
 
 {- |
@@ -78,7 +78,7 @@ Note that if the request does not conform to the shape of the
 NewOrderRequest Servant generates a 400 bad request. We do not need to handle this
 error scenario.
 -}
-createOrder :: Text -> NewOrderRequest -> Handler (JSONApi.Document OR.OrderResource)
+createOrder :: Text -> NewOrderRequest -> Handler (Document OR.OrderResource)
 createOrder uId newProductRequest = do
   -- We call the User.findById function which returns a IO (Maybe User). So
   -- we need to call liftIO which has the signature IO a -> m a.
@@ -87,7 +87,7 @@ createOrder uId newProductRequest = do
   if isJust mUser && isJust mProd
   then do
     o <- liftIO $ create (fromJust mUser) (fromJust mProd)
-    pure $ JSONApi.mkDocument [mkOrderResource $ Just o] Nothing Nothing
+    pure $ mkSimpleDocument [mkOrderResource $ Just o]
   else throwError err404
 
 -- In this function we cancel an order by deleting the order from the database. If either the user
