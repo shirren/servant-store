@@ -72,11 +72,11 @@ The domain model is intentionally simple and made familiar on purpose. A simple 
 
 ### Orders
 
-## Checklist
-
 ## Ordering
 
 This projects demonstrates how to implement sorting using the Beam API. All the uses can naturally be found in the data modules of each of the higher level modules (i.e. Products and Users). In the products data module we demonstrate how to sort on the [product description column in ascending order](https://github.com/shirren/servant-store/blob/master/src/Products/Data.hs#L29). In the users data module we demonstrated how to sort on 2 columns, [one in ascending order, and the other in descending order](https://github.com/shirren/servant-store/blob/master/src/Users/Data.hs#L30).
+
+## Checklist
 
 The following checklist illustrates some of the concepts covered by this prototype.
 
