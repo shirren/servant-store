@@ -26,9 +26,10 @@ findAll (PageSize pageSize) (PageNum pageNum) = do
   runBeamPostgresDebug putStrLn conn $
     runSelectReturningList $
       select $
-      limit_ (toInteger pageSize) $
-      offset_ (toInteger $ pageNum * pageSize) $
-      all_ (storeProducts storeDb)
+        orderBy_ (asc_ . productDescription) $
+        limit_ (toInteger pageSize) $
+        offset_ (toInteger $ pageNum * pageSize) $
+        all_ (storeProducts storeDb)
 
 -- Retrieve a specific product from the database using its universal identifier.
 -- As such a product may not exist we return a Maybe T.
