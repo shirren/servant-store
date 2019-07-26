@@ -90,6 +90,8 @@ This projects demonstrates how to implement sorting using the Beam API. All the 
 
 ## Pagination
 
+Each API list function (e.g GetUsers, GetProducts etc) takes an optional PageSize and PageNum. These values are passed to the data layer to retrieve a page of results using an offset approach. An offset approach means that the first page starts at Page 0. As these values are optional the system defaults the page size to 10 (i.e. 10 records per request), and the page number to 0 (i.e. the first page).
+
 ## Checklist
 
 The following checklist illustrates some of the concepts covered by this prototype.
@@ -115,4 +117,6 @@ The following checklist illustrates some of the concepts covered by this prototy
 - [ ] Error Handling
 
 ## Feedback
+
+This endeavour has thus far been very much a solo effort, therefore I expect there to be many shortcomings with the documentation, approach and code. So please if you do find issues with this repository, notify me via the the [Issues](https://github.com/shirren/servant-store/issues) page. There is no format for how an issue should look. I will produce one at some point.
 
