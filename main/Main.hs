@@ -3,9 +3,15 @@
 
 module Main where
 
-import Auth.ClaimsSubSet (ClaimsSubSet (..))
--- import Control.Concurrent (forkIO)
--- import Control.Monad (forever)
+import Auth.ClaimsSubSet (AuthUser (..))
+import Control.Concurrent (forkIO)
+import Crypto.JOSE.JWA.JWS (Alg (HS256))
+import Crypto.JWT (
+    ClaimsSet
+  , JWK
+  , JWKSet
+  , JWTError)
+import Data.Aeson (eitherDecode')
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Orders.Api (OrderApi, ordersServer)
@@ -15,18 +21,24 @@ import Servant (
   , (:>)
   , Proxy (..)
   , Context ((:.), EmptyContext)
-  , Server, serveWithContext)
+  , Server
+  , serveWithContext)
 import Servant.Auth.Server (
     Auth
   , JWT
+  , JWTSettings (..)
   , defaultJWTSettings
   , defaultCookieSettings
-  , generateKey)
+  , generateKey
+  , jwtAlg
+  , makeJWT)
 import Store (seedData)
 import Users.Api (UserApi, usersServer)
 
+import qualified Network.HTTP.Simple as HTTP
+
 type API auths =
-       (Auth auths ClaimsSubSet :> UserApi)
+       (Auth auths AuthUser :> UserApi)
   :<|> ProductApi
   :<|> OrderApi
 
@@ -41,19 +53,15 @@ main = do
   seedData
   key <- generateKey
   let jwtCfg = defaultJWTSettings key
-      cfg = defaultCookieSettings :. jwtCfg :. EmptyContext
+      jwtCfg' = jwtCfg { jwtAlg = Just HS256 }
+      cfg = defaultCookieSettings :. jwtCfg' :. EmptyContext
       api = Proxy :: Proxy (API '[JWT])
-  run 3000 $ logStdoutDev (serveWithContext api cfg server)
-
-  -- putStrLn "Started server on localhost:3000"
-  -- putStrLn "Enter name and email separated by a space for a new token"
-
-  -- forever $ do
-  --    xs <- words <$> getLine
-  --    case xs of
-  --      [iss', aud'] -> do
-  --        etoken <- makeJWT (ClaimsSubSet iss' aud') jwtCfg Nothing
-  --        case etoken of
-  --          Left e -> putStrLn $ "Error generating token:t" ++ show e
-  --          Right v -> putStrLn $ "New token:\t" ++ show v
-  --      _ -> putStrLn "Expecting a name and email separated by spaces"
+      req = HTTP.parseRequest_ "https://paidright-ci.au.auth0.com/.well-known/jwks.json"
+  response <- HTTP.httpLBS req
+  let body = HTTP.getResponseBody response
+  case eitherDecode' body :: Either String JWKSet of
+    Left error ->
+      print error
+    Right json ->
+      print json
+  -- run 3000 $ logStdoutDev (serveWithContext api cfg server)

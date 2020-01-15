@@ -117,13 +117,18 @@ executable hstore
                       , beam-migrate
                       , beam-postgres
                       , hstore
+                      , http-conduit
+                      , http-types
                       , jose
                       , json-api-lib      >= 0.1 && < 0.2
+                      , lens
+                      , monad-time
                       , postgresql-simple
                       , servant-server
                       , servant-auth
                       , servant-auth-server
                       , text
+                      , transformers
                       , uuid
                       , wai
                       , wai-extra
@@ -136,7 +141,7 @@ executable hstore
   default-language:    Haskell2010
 
   ghc-options:         -O2
-                       -Werror
+                      --  -Werror
                        -Wall
                        -Wincomplete-uni-patterns
                        -Wincomplete-record-updates
