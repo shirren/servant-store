@@ -72,6 +72,7 @@ library
   -- Other library packages from which modules are imported.
   build-depends:        base >=4.12 && <4.13
                       , aeson
+                      , base64-bytestring
                       , beam-core
                       , beam-migrate
                       , beam-postgres
@@ -95,7 +96,7 @@ library
   default-language:    Haskell2010
 
   ghc-options:         -O2
-                       -Werror
+                       -- -Werror
                        -Wall
                        -Wincomplete-uni-patterns
                        -Wincomplete-record-updates
@@ -113,15 +114,19 @@ executable hstore
   -- Other library packages from which modules are imported.
   build-depends:        base >=4.12 && <4.13
                       , aeson
+                      , base64-bytestring
+                      , bytestring
                       , beam-core
                       , beam-migrate
                       , beam-postgres
+                      , hexstring
                       , hstore
                       , http-conduit
                       , http-types
                       , jose
                       , json-api-lib      >= 0.1 && < 0.2
                       , lens
+                      , lens-aeson
                       , monad-time
                       , postgresql-simple
                       , servant-server

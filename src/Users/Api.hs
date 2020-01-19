@@ -10,7 +10,7 @@ module Users.Api (
 , usersServer
 ) where
 
-import Auth.ClaimsSubSet (AuthUser) --ClaimsSubSet)
+import Auth.ClaimsSubSet (AuthUser, ClaimsSubSet)
 import Common.Paging
 import Control.Monad.IO.Class (liftIO)
 import Data.Text (Text)
@@ -58,7 +58,7 @@ type UserApi =
 
 -- | Definition of our User module API which maps our routes from the type
 -- UserApi to a collection of functions that return a type of Handler.
-usersServer :: AuthResult AuthUser -> Server UserApi
+usersServer :: AuthResult ClaimsSubSet -> Server UserApi
 usersServer (Authenticated _) =
   getUsers :<|>
   getUser :<|>

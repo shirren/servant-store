@@ -27,9 +27,11 @@ instance FromJSON AuthUser
 instance FromJWT AuthUser where
   decodeJWT m =
     case HM.lookup "dat" (m ^. Jose.unregisteredClaims) of
-      Nothing -> Left "Missing 'dat' claim"
+      Nothing -> do
+        trace "Missing 'dat' claim" (Left "Missing 'dat' claim")
       Just v  -> case fromJSON v of
-        Error e -> Left $ pack e
+        Error e -> 
+          trace (show e) (Left $ pack e)
         Success a -> trace "Decoding AuthUser JWT" Right a
 
 -- ToJSON is required as ClaimsSubSet is an instance of ToJWT
