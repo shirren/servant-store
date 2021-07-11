@@ -16,13 +16,10 @@ import Database.Beam (Database, DatabaseSettings, TableEntity, defaultDbSettings
 import Database.Beam.Postgres (Postgres)
 import Database.PostgreSQL.Simple (connectPostgreSQL)
 import Database.PostgreSQL.Simple.Internal (Connection)
-
 import GHC.Generics (Generic)
-
 import Orders.Types (OrderT (..))
 import Products.Types (ProductT (..))
 import Users.Types (UserT (..))
-
 
 data SortDirection = ASC | DESC
 
@@ -43,4 +40,4 @@ storeDb = defaultDbSettings
 
 getConnection :: IO Connection
 getConnection =
-  connectPostgreSQL "dbname=store_dev host=localhost user=? password=? port=5432"
+  connectPostgreSQL "dbname=store_dev host=localhost user=postgres password=root port=5432"
