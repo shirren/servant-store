@@ -16,7 +16,7 @@ Ensure the application compiles with the following command `cabal new-build`. On
 
 ### Migrations
 
-This example application currently does not support migrations. It is on my todo list. Till migrations are available the following `CREATE TABLE` sql statements need to be run in sequential order. But to begin first create the database in Potgres with the following command;
+This example application currently does not support migrations. It is on my todo list. Till migrations are available the following `CREATE TABLE` sql statements need to be run in sequential order. But to begin first create the database in Postgres with the following command;
 
 ```SQL
 CREATE DATABASE store_dev;
@@ -81,7 +81,7 @@ getUser uId = do
 
 ### GET multiple resources
 
-Following on from the last section we now present how to retrieve a collection of `User` resources. To retrieve a collection of resources we issue a HTTP GET to the URL `/users` following RESTful conventions. we then retrieve a `page` ([Pagination](#Pagination)) of users. TO BE CONT... 
+Following on from the last section we now present how to retrieve a collection of `User` resources. To retrieve a collection of resources we issue a HTTP GET to the URL `/users` following RESTful conventions. we then retrieve a `page` ([Pagination](#Pagination)) of users. TO BE CONT...
 
 
 ## Ordering

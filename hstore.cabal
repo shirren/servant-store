@@ -47,7 +47,8 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:      Data.DB
+  exposed-modules:      Auth.ClaimsSubSet
+                      , Data.DB
                       , Orders.Api
                       , Orders.Data
                       , Orders.Resources
@@ -63,22 +64,27 @@ library
                       , Users.Types
 
   -- Modules included in this library but not exported.
-  other-modules:
-                      Common.Paging
+  other-modules:      Common.Paging
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.11 && <4.12
+  build-depends:        base >=4.12 && <4.13
                       , aeson
+                      , base64-bytestring
                       , beam-core
                       , beam-migrate
                       , beam-postgres
+                      , jose
                       , json-api-lib      >= 0.1.1.1 && < 0.2
+                      , lens
                       , postgresql-simple
+                      , servant-auth
+                      , servant-auth-server
                       , servant-server
                       , text
+                      , unordered-containers
                       , uuid
                       , wai
                       , warp
@@ -89,7 +95,11 @@ library
   -- Base language which the package is written in.
   default-language:    Haskell2010
 
-  ghc-options:         -O2 -Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  ghc-options:         -O2
+                       -- -Werror
+                       -Wall
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
 
 executable hstore
   -- .hs or .lhs file containing the Main module.
@@ -102,17 +112,28 @@ executable hstore
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.11 && <4.12
+  build-depends:        base >=4.12 && <4.13
                       , aeson
+                      , base64-bytestring
+                      , bytestring
                       , beam-core
                       , beam-migrate
                       , beam-postgres
+                      , hexstring
                       , hstore
+                      , http-conduit
+                      , http-types
+                      , jose
                       , json-api-lib      >= 0.1 && < 0.2
+                      , lens
+                      , lens-aeson
+                      , monad-time
                       , postgresql-simple
                       , servant-server
+                      , servant-auth
+                      , servant-auth-server
                       , text
-                      , servant-server
+                      , transformers
                       , uuid
                       , wai
                       , wai-extra
@@ -124,4 +145,8 @@ executable hstore
   -- Base language which the package is written in.
   default-language:    Haskell2010
 
-  ghc-options:         -O2 -Werror -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+  ghc-options:         -O2
+                      --  -Werror
+                       -Wall
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
