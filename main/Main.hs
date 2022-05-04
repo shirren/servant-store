@@ -80,7 +80,7 @@ hexToBytes =
 main :: IO ()
 main = do
   seedData
-  let req = HTTP.parseRequest_ "https://paidright-ci.au.auth0.com/.well-known/jwks.json"
+  let req = HTTP.parseRequest_ "https://<change_me>.auth0.com/.well-known/jwks.json"
   response <- HTTP.httpLBS req
   let body = HTTP.getResponseBody response
   case eitherDecode body :: Either String JWKSetX5THex of
